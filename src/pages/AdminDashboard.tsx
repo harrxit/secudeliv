@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -62,10 +61,23 @@ const AdminDashboard = () => {
   const handleNewRequest = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const apartmentNumber = formData.get("apartment") as string;
+    
+    // Find the resident by apartment number
+    const resident = MOCK_RESIDENTS.find(r => r.apartment === apartmentNumber);
+    
+    if (!resident) {
+      toast({
+        title: "Error",
+        description: "No resident found with this apartment number.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     const newRequest: AccessRequest = {
       id: Date.now().toString(),
-      userId: "user-1", // In a real app, this would be the actual user's ID
+      userId: resident.id,
       deliveryPlatform: formData.get("platform") as string,
       deliveryPersonName: formData.get("name") as string,
       deliveryType: formData.get("type") as DeliveryType,
@@ -73,14 +85,14 @@ const AdminDashboard = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       initiatedByAdmin: true,
-      deliveryPersonImage: "", // In a real app, this would be handled by file upload
+      deliveryPersonImage: "",
     };
 
     setRequests([newRequest, ...requests]);
     setIsDialogOpen(false);
     toast({
       title: "Request Created",
-      description: "The request has been sent to the resident for approval.",
+      description: `The request has been sent to ${resident.name} (${resident.apartment}) for approval.`,
     });
   };
 
@@ -133,6 +145,22 @@ const AdminDashboard = () => {
             </DialogHeader>
             <form onSubmit={handleNewRequest}>
               <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label>Apartment Number</label>
+                  <Input
+                    name="apartment"
+                    placeholder="e.g., A-101"
+                    required
+                    list="apartments"
+                  />
+                  <datalist id="apartments">
+                    {MOCK_RESIDENTS.map((resident) => (
+                      <option key={resident.id} value={resident.apartment}>
+                        {resident.apartment} - {resident.name}
+                      </option>
+                    ))}
+                  </datalist>
+                </div>
                 <div className="space-y-2">
                   <label>Delivery Platform</label>
                   <Input

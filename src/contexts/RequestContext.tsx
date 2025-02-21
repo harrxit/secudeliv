@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState } from "react";
-import { AccessRequest } from "@/types";
+import { AccessRequest, RequestStatus } from "@/types";
 
 interface RequestContextType {
   requests: AccessRequest[];
