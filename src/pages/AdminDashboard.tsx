@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { AccessRequest, DeliveryType } from "@/types";
+import { AccessRequest, DeliveryType, RequestStatus } from "@/types";
 import {
   Package,
   Clock,
@@ -36,7 +36,13 @@ import {
   XCircle,
   UserPlus,
   Filter,
+  Search,
 } from "lucide-react";
+
+const MOCK_RESIDENTS = [
+  { id: "user-1", name: "John Doe", apartment: "A-101" },
+  { id: "user-2", name: "Jane Smith", apartment: "B-202" },
+];
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -44,7 +50,8 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [requests, setRequests] = useState<AccessRequest[]>([]);
-  const [filter, setFilter] = useState<RequestStatus>("pending");
+  const [filter, setFilter] = useState<RequestStatus | "all">("pending");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Redirect if not logged in as admin
   if (!user || user.role !== "admin") {
@@ -91,9 +98,17 @@ const AdminDashboard = () => {
     });
   };
 
-  const filteredRequests = requests.filter(
-    (request) => filter === "all" || request.status === filter
-  );
+  const filteredRequests = requests
+    .filter((request) => filter === "all" || request.status === filter)
+    .filter((request) => {
+      const resident = MOCK_RESIDENTS.find((r) => r.id === request.userId);
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        !searchQuery ||
+        resident?.apartment.toLowerCase().includes(searchLower) ||
+        resident?.name.toLowerCase().includes(searchLower)
+      );
+    });
 
   return (
     <div className="max-w-6xl mx-auto animate-fadeIn">
@@ -147,7 +162,6 @@ const AdminDashboard = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                {/* In a real app, add image upload functionality here */}
               </div>
               <DialogFooter>
                 <Button type="submit">Create Request</Button>
@@ -160,30 +174,41 @@ const AdminDashboard = () => {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:justify-between">
               <div>
                 <CardTitle>Access Requests</CardTitle>
                 <CardDescription>
                   Manage and track all delivery access requests
                 </CardDescription>
               </div>
-              <Select
-                value={filter}
-                onValueChange={(value) =>
-                  setFilter(value as RequestStatus | "all")
-                }
-              >
-                <SelectTrigger className="w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Requests</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <Input
+                    className="pl-9 w-full sm:w-[250px]"
+                    placeholder="Search by apartment or resident"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <Select
+                  value={filter}
+                  onValueChange={(value) =>
+                    setFilter(value as RequestStatus | "all")
+                  }
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Requests</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -193,66 +218,75 @@ const AdminDashboard = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <Package className="h-5 w-5 text-gray-600" />
-                      <div>
-                        <p className="font-medium">
-                          {request.deliveryPlatform} - {request.deliveryPersonName}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Type: {request.deliveryType}
-                        </p>
+                {filteredRequests.map((request) => {
+                  const resident = MOCK_RESIDENTS.find(
+                    (r) => r.id === request.userId
+                  );
+                  return (
+                    <div
+                      key={request.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <Package className="h-5 w-5 text-gray-600" />
+                        <div>
+                          <p className="font-medium">
+                            {request.deliveryPlatform} -{" "}
+                            {request.deliveryPersonName}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Type: {request.deliveryType} |{" "}
+                            {resident
+                              ? `Resident: ${resident.name} (${resident.apartment})`
+                              : "Unknown Resident"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        {request.status === "pending" ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-success border-success hover:bg-success hover:text-white"
+                              onClick={() =>
+                                handleStatusUpdate(request.id, "approved")
+                              }
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-danger border-danger hover:bg-danger hover:text-white"
+                              onClick={() =>
+                                handleStatusUpdate(request.id, "rejected")
+                              }
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </>
+                        ) : (
+                          <span
+                            className={`text-sm font-medium ${
+                              request.status === "approved"
+                                ? "text-success"
+                                : "text-danger"
+                            }`}
+                          >
+                            {request.status.charAt(0).toUpperCase() +
+                              request.status.slice(1)}
+                          </span>
+                        )}
+                        <span className="text-sm text-gray-500">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      {request.status === "pending" ? (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-success border-success hover:bg-success hover:text-white"
-                            onClick={() =>
-                              handleStatusUpdate(request.id, "approved")
-                            }
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-danger border-danger hover:bg-danger hover:text-white"
-                            onClick={() =>
-                              handleStatusUpdate(request.id, "rejected")
-                            }
-                          >
-                            <XCircle className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
-                        </>
-                      ) : (
-                        <span
-                          className={`text-sm font-medium ${
-                            request.status === "approved"
-                              ? "text-success"
-                              : "text-danger"
-                          }`}
-                        >
-                          {request.status.charAt(0).toUpperCase() +
-                            request.status.slice(1)}
-                        </span>
-                      )}
-                      <span className="text-sm text-gray-500">
-                        {new Date(request.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
