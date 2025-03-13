@@ -1,6 +1,8 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRequests } from "@/contexts/RequestContext";
 import {
   Card,
   CardContent,
@@ -48,7 +50,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [requests, setRequests] = useState<AccessRequest[]>([]);
+  const { requests, addRequest, updateRequestStatus } = useRequests();
   const [filter, setFilter] = useState<RequestStatus | "all">("pending");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -88,7 +90,7 @@ const AdminDashboard = () => {
       deliveryPersonImage: "",
     };
 
-    setRequests([newRequest, ...requests]);
+    addRequest(newRequest);
     setIsDialogOpen(false);
     toast({
       title: "Request Created",
@@ -97,13 +99,7 @@ const AdminDashboard = () => {
   };
 
   const handleStatusUpdate = (requestId: string, newStatus: RequestStatus) => {
-    setRequests(
-      requests.map((request) =>
-        request.id === requestId
-          ? { ...request, status: newStatus, updatedAt: new Date().toISOString() }
-          : request
-      )
-    );
+    updateRequestStatus(requestId, newStatus);
     toast({
       title: `Request ${newStatus}`,
       description: `The access request has been ${newStatus}.`,

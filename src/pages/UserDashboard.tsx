@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRequests } from "@/contexts/RequestContext";
 import {
   Card,
   CardContent,
@@ -36,7 +37,7 @@ const UserDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [requests, setRequests] = useState<AccessRequest[]>([]);
+  const { requests, addRequest } = useRequests();
 
   // Redirect if not logged in as user
   if (!user || user.role !== "user") {
@@ -59,13 +60,16 @@ const UserDashboard = () => {
       updatedAt: new Date().toISOString(),
     };
 
-    setRequests([newRequest, ...requests]);
+    addRequest(newRequest);
     setIsDialogOpen(false);
     toast({
       title: "Access Request Created",
       description: "Your request has been sent to security for approval.",
     });
   };
+
+  // Filter requests to only show those belonging to the current user
+  const userRequests = requests.filter(request => request.userId === user.id);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -159,13 +163,13 @@ const UserDashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {requests.length === 0 ? (
+            {userRequests.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 No access requests yet
               </div>
             ) : (
               <div className="space-y-4">
-                {requests.map((request) => (
+                {userRequests.map((request) => (
                   <div
                     key={request.id}
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
