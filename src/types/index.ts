@@ -3,6 +3,8 @@ export type DeliveryType = "food" | "courier" | "document";
 
 export type RequestStatus = "pending" | "approved" | "rejected";
 
+export type UserStatus = "pending" | "approved" | "rejected";
+
 export interface AccessRequest {
   id: string;
   userId: string;
@@ -14,6 +16,7 @@ export interface AccessRequest {
   updatedAt: string;
   initiatedByAdmin?: boolean;
   deliveryPersonImage?: string;
+  comment?: string;
 }
 
 export interface User {
@@ -21,4 +24,16 @@ export interface User {
   name: string;
   apartment: string;
   role: "user" | "admin";
+  status?: UserStatus;
+  email?: string;
+  phone?: string;
+  registeredAt?: string;
+}
+
+export interface Comment {
+  id: string;
+  requestId: string;
+  userId: string;
+  text: string;
+  createdAt: string;
 }

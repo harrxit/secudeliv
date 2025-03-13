@@ -32,11 +32,16 @@ const Index = () => {
           </p>
           <Button
             size="lg"
-            className="w-full"
+            className="w-full mb-4"
             onClick={() => handleLogin("user")}
           >
             Login as Resident
           </Button>
+          <div className="text-center mt-4">
+            <Button variant="link" onClick={() => navigate("/register")}>
+              New resident? Register here
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
