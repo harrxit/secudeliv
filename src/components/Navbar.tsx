@@ -19,7 +19,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
             <Shield className="h-8 w-8 text-primary" />
-            <span className="text-xl font-semibold">SafeEntry Guard</span>
+            <span className="text-xl font-semibold">Secudeliv</span>
           </Link>
           <div className="flex items-center space-x-4">
             {user ? (
