@@ -41,6 +41,7 @@ import {
   Search,
   MessageSquare,
   UserCheck,
+  User,
 } from "lucide-react";
 
 const AdminDashboard = () => {
