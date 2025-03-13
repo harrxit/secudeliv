@@ -2,11 +2,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
+import { Shield, User } from "lucide-react";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, login } = useAuth();
   const navigate = useNavigate();
+
+  const handleAdminLogin = () => {
+    login("admin");
+    navigate("/admin-dashboard");
+  };
 
   return (
     <nav className="bg-white shadow-sm border-b animate-fadeIn">
@@ -34,10 +39,19 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex space-x-2">
-                <Button variant="outline" onClick={() => navigate("/")}>
-                  Login
+                <Button variant="outline" onClick={() => navigate("/register")}>
+                  Register
                 </Button>
               </div>
+            )}
+            {user?.role !== "admin" && (
+              <Button 
+                variant="outline" 
+                className="bg-amber-50 hover:bg-amber-100 border-amber-200"
+                onClick={handleAdminLogin}
+              >
+                Admin Login
+              </Button>
             )}
           </div>
         </div>

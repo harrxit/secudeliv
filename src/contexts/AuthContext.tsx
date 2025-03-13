@@ -49,6 +49,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   ]);
 
+  // Auto-login on app start
+  useEffect(() => {
+    // Default to user role for auto-login
+    const regularUser = allUsers.find(
+      (u) => u.role === "user" && u.status === "approved"
+    );
+    if (regularUser) setUser(regularUser);
+  }, []);
+
   // Filter for pending user registrations
   const pendingUsers = allUsers.filter(
     (u) => u.role === "user" && u.status === "pending"
