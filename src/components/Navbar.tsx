@@ -2,7 +2,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Shield, LogIn, UserPlus } from "lucide-react";
+import { Shield, LogIn, UserPlus, Lock } from "lucide-react";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -25,7 +25,7 @@ const Navbar = () => {
             {user ? (
               <>
                 <span className="text-sm text-gray-600">
-                  {user.name} ({user.apartment})
+                  {user.name} ({user.apartment}) - {user.userType || 'Resident'}
                 </span>
                 {user.role === "admin" ? (
                   <Button
@@ -54,24 +54,24 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                {!isRegisterPage && (
+                {!isRegisterPage && !isLoginPage && (
                   <Button 
                     variant="outline" 
-                    onClick={() => navigate("/register")}
+                    onClick={() => navigate("/login")}
                     className="flex items-center gap-1"
                   >
                     <UserPlus className="h-4 w-4" />
-                    <span>Register</span>
+                    <span>Resident Login</span>
                   </Button>
                 )}
 
                 {!isLoginPage && !location.pathname.includes("dashboard") && (
                   <Button 
-                    onClick={() => navigate("/login")}
+                    onClick={() => navigate("/admin-login")}
                     className="flex items-center gap-1"
                   >
-                    <LogIn className="h-4 w-4" />
-                    <span>Login</span>
+                    <Lock className="h-4 w-4" />
+                    <span>Admin Login</span>
                   </Button>
                 )}
               </>

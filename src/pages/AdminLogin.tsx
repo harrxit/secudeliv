@@ -24,7 +24,7 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Shield, UserPlus } from "lucide-react";
+import { Shield } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -35,7 +35,7 @@ const loginSchema = z.object({
   }),
 });
 
-const Login = () => {
+const AdminLogin = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -55,16 +55,18 @@ const Login = () => {
       const user = login(values.email, values.password);
       
       if (user) {
-        toast({
-          title: "Login Successful",
-          description: "Welcome back to Secudeliv!",
-        });
-        
-        // Redirect based on user role
         if (user.role === "admin") {
+          toast({
+            title: "Admin Login Successful",
+            description: "Welcome to Secudeliv Security Panel!",
+          });
           navigate("/admin-dashboard");
         } else {
-          navigate("/user-dashboard");
+          toast({
+            title: "Access Denied",
+            description: "You are not authorized to access the admin panel.",
+            variant: "destructive",
+          });
         }
       } else {
         toast({
@@ -89,15 +91,15 @@ const Login = () => {
       <div className="max-w-md w-full px-4">
         <div className="text-center mb-6">
           <Shield className="h-12 w-12 text-primary mx-auto mb-2" />
-          <h1 className="text-2xl font-bold">Login to Secudeliv</h1>
-          <p className="text-gray-600">Access your resident account</p>
+          <h1 className="text-2xl font-bold">Security Admin Login</h1>
+          <p className="text-gray-600">Access the security management panel</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Resident Login</CardTitle>
+            <CardTitle>Admin Login</CardTitle>
             <CardDescription>
-              Please enter your credentials to login.
+              Please enter your security credentials to login.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -115,7 +117,7 @@ const Login = () => {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="john.doe@example.com"
+                          placeholder="admin@example.com"
                           {...field}
                         />
                       </FormControl>
@@ -147,25 +149,15 @@ const Login = () => {
                   className="w-full"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Logging in..." : "Login"}
+                  {isSubmitting ? "Logging in..." : "Login as Admin"}
                 </Button>
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex flex-col items-center">
-            <Button
-              variant="link"
-              onClick={() => navigate("/register")}
-              className="text-gray-500 flex items-center gap-1"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span>New resident? Register here</span>
-            </Button>
-          </CardFooter>
         </Card>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default AdminLogin;
