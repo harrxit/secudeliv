@@ -1,12 +1,12 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { User, UserStatus } from "@/types";
+import { User, UserStatus, UserType } from "@/types";
 
 interface AuthContextType {
   user: User | null;
-  login: (role: "user" | "admin") => void;
+  login: (email: string, password: string) => User | null;
   logout: () => void;
-  registerUser: (userData: Omit<User, "id" | "role" | "status">) => User;
+  registerUser: (userData: Omit<User, "id" | "role" | "status" | "registeredAt">) => User;
   updateUserStatus: (userId: string, status: UserStatus) => void;
   pendingUsers: User[];
   allUsers: User[];
@@ -23,7 +23,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       apartment: "Security Office",
       role: "admin",
       status: "approved",
-      email: "security@example.com",
+      email: "admin@example.com",
+      password: "admin123",
       phone: "123-456-7890",
       registeredAt: new Date().toISOString(),
     },
@@ -34,7 +35,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: "user",
       status: "approved",
       email: "john@example.com",
+      password: "password123",
       phone: "123-456-7891",
+      userType: "owner",
       registeredAt: new Date().toISOString(),
     },
     {
@@ -44,7 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: "user",
       status: "approved",
       email: "jane@example.com",
+      password: "password123",
       phone: "123-456-7892",
+      userType: "tenant",
+      ownerName: "Mike Johnson",
+      ownerContact: "123-456-7893",
       registeredAt: new Date().toISOString(),
     },
   ]);
@@ -54,25 +61,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (u) => u.role === "user" && u.status === "pending"
   );
 
-  const login = (role: "user" | "admin") => {
-    // For demo, we'll log in as a specific user based on role
-    if (role === "admin") {
-      const adminUser = allUsers.find((u) => u.role === "admin");
-      if (adminUser) setUser(adminUser);
-    } else {
-      // For demo, just log in as the first approved user
-      const regularUser = allUsers.find(
-        (u) => u.role === "user" && u.status === "approved"
-      );
-      if (regularUser) setUser(regularUser);
+  const login = (email: string, password: string) => {
+    const foundUser = allUsers.find(
+      (u) => u.email === email && u.password === password
+    );
+    
+    if (foundUser) {
+      setUser(foundUser);
+      return foundUser;
     }
+    
+    return null;
   };
 
   const logout = () => {
     setUser(null);
   };
 
-  const registerUser = (userData: Omit<User, "id" | "role" | "status">) => {
+  const registerUser = (userData: Omit<User, "id" | "role" | "status" | "registeredAt">) => {
     const newUser: User = {
       id: `user-${Date.now()}`,
       role: "user",

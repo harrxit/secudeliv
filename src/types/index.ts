@@ -5,6 +5,8 @@ export type RequestStatus = "pending" | "approved" | "rejected";
 
 export type UserStatus = "pending" | "approved" | "rejected";
 
+export type UserType = "owner" | "tenant";
+
 export interface AccessRequest {
   id: string;
   userId: string;
@@ -28,6 +30,10 @@ export interface User {
   email?: string;
   phone?: string;
   registeredAt?: string;
+  password?: string;
+  userType?: UserType;
+  ownerName?: string;
+  ownerContact?: string;
 }
 
 export interface Comment {

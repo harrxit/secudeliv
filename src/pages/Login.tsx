@@ -26,12 +26,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Shield } from "lucide-react";
 
-const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+const loginSchema = z.object({
+  email: z.string().email({
+    message: "Please enter a valid email address.",
   }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
+  password: z.string().min(1, {
+    message: "Password is required.",
   }),
 });
 
@@ -41,30 +41,42 @@ const Login = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
     setIsSubmitting(true);
     try {
-      // For demo purpose, we just login as a user
-      login("user");
+      const user = login(values.email, values.password);
       
-      toast({
-        title: "Login Successful",
-        description: "You have been logged in successfully.",
-      });
-
-      navigate("/user-dashboard");
+      if (user) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back to Secudeliv!",
+        });
+        
+        // Redirect based on user role
+        if (user.role === "admin") {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/user-dashboard");
+        }
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
-        title: "Login Failed",
-        description: "Invalid username or password.",
+        title: "Login Error",
+        description: "There was an error processing your login.",
         variant: "destructive",
       });
     } finally {
@@ -77,15 +89,15 @@ const Login = () => {
       <div className="max-w-md w-full px-4">
         <div className="text-center mb-6">
           <Shield className="h-12 w-12 text-primary mx-auto mb-2" />
-          <h1 className="text-2xl font-bold">Welcome to Secudeliv</h1>
-          <p className="text-gray-600">Secure delivery management for your apartment complex</p>
+          <h1 className="text-2xl font-bold">Login to Secudeliv</h1>
+          <p className="text-gray-600">Access your resident account</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Resident Login</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account
+              Please enter your credentials to login.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -96,12 +108,16 @@ const Login = () => {
               >
                 <FormField
                   control={form.control}
-                  name="username"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="your_username" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="john.doe@example.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -115,10 +131,10 @@ const Login = () => {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="********" 
-                          {...field} 
+                        <Input
+                          type="password"
+                          placeholder="********"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />

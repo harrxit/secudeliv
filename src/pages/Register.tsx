@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -23,10 +22,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Shield } from "lucide-react";
+import { UserType } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -38,10 +45,25 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
   phone: z.string().min(10, {
     message: "Please enter a valid phone number.",
   }),
-  notes: z.string().optional(),
+  userType: z.enum(["owner", "tenant"], {
+    required_error: "Please select if you are an owner or tenant.",
+  }),
+  ownerName: z.string().optional(),
+  ownerContact: z.string().optional(),
+}).refine((data) => {
+  if (data.userType === "tenant") {
+    return !!data.ownerName && !!data.ownerContact;
+  }
+  return true;
+}, {
+  message: "Owner details are required for tenants",
+  path: ["ownerName"],
 });
 
 const Register = () => {
@@ -49,6 +71,7 @@ const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userType, setUserType] = useState<UserType>("owner");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,8 +79,11 @@ const Register = () => {
       name: "",
       apartment: "",
       email: "",
+      password: "",
       phone: "",
-      notes: "",
+      userType: "owner",
+      ownerName: "",
+      ownerContact: "",
     },
   });
 
@@ -68,7 +94,11 @@ const Register = () => {
         name: values.name,
         apartment: values.apartment,
         email: values.email,
+        password: values.password,
         phone: values.phone,
+        userType: values.userType,
+        ownerName: values.userType === "tenant" ? values.ownerName : undefined,
+        ownerContact: values.userType === "tenant" ? values.ownerContact : undefined,
       });
 
       toast({
@@ -95,7 +125,7 @@ const Register = () => {
       <div className="max-w-md w-full px-4">
         <div className="text-center mb-6">
           <Shield className="h-12 w-12 text-primary mx-auto mb-2" />
-          <h1 className="text-2xl font-bold">Register for SafeEntry Guard</h1>
+          <h1 className="text-2xl font-bold">Register for Secudeliv</h1>
           <p className="text-gray-600">Create your resident account</p>
         </div>
 
@@ -161,6 +191,24 @@ const Register = () => {
 
                 <FormField
                   control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="********"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
@@ -175,24 +223,63 @@ const Register = () => {
 
                 <FormField
                   control={form.control}
-                  name="notes"
+                  name="userType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Additional Notes (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Any additional information for security admin..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        This information will be shared with the security admin
-                        for verification purposes.
-                      </FormDescription>
+                      <FormLabel>Are you the Owner or Tenant?</FormLabel>
+                      <Select 
+                        onValueChange={(value: UserType) => {
+                          field.onChange(value);
+                          setUserType(value);
+                        }}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="owner">Owner</SelectItem>
+                          <SelectItem value="tenant">Tenant</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                {userType === "tenant" && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="ownerName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Owner's Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Owner's full name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="ownerContact"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Owner's Contact Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Owner's phone number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
 
                 <Button
                   type="submit"

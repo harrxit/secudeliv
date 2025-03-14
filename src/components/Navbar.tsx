@@ -1,17 +1,17 @@
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Shield, User } from "lucide-react";
+import { Shield, LogIn, UserPlus } from "lucide-react";
 
 const Navbar = () => {
-  const { user, logout, login } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleAdminLogin = () => {
-    login("admin");
-    navigate("/admin-dashboard");
-  };
+  // Don't show login/register buttons on those pages
+  const isLoginPage = location.pathname === "/login";
+  const isRegisterPage = location.pathname === "/register";
 
   return (
     <nav className="bg-white shadow-sm border-b animate-fadeIn">
@@ -27,6 +27,21 @@ const Navbar = () => {
                 <span className="text-sm text-gray-600">
                   {user.name} ({user.apartment})
                 </span>
+                {user.role === "admin" ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/admin-dashboard")}
+                  >
+                    Admin Dashboard
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/user-dashboard")}
+                  >
+                    My Dashboard
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -38,20 +53,28 @@ const Navbar = () => {
                 </Button>
               </>
             ) : (
-              <div className="flex space-x-2">
-                <Button variant="outline" onClick={() => navigate("/register")}>
-                  Register
-                </Button>
-              </div>
-            )}
-            {user?.role !== "admin" && (
-              <Button 
-                variant="outline" 
-                className="bg-amber-50 hover:bg-amber-100 border-amber-200"
-                onClick={handleAdminLogin}
-              >
-                Admin Login
-              </Button>
+              <>
+                {!isRegisterPage && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate("/register")}
+                    className="flex items-center gap-1"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Register</span>
+                  </Button>
+                )}
+
+                {!isLoginPage && !location.pathname.includes("dashboard") && (
+                  <Button 
+                    onClick={() => navigate("/login")}
+                    className="flex items-center gap-1"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Login</span>
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>

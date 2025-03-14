@@ -12,6 +12,7 @@ import Register from "./pages/Register";
 import UserDashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,8 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Layout />}>
-                <Route index element={<Login />} />
+                <Route index element={<LandingPage />} />
+                <Route path="login" element={<Login />} />
                 <Route path="register" element={<Register />} />
                 <Route path="user-dashboard" element={<UserDashboard />} />
                 <Route path="admin-dashboard" element={<AdminDashboard />} />
