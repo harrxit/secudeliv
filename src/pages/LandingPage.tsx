@@ -26,14 +26,6 @@ const LandingPage = () => {
             >
               Resident Login
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate("/register")}
-              className="text-lg px-8"
-            >
-              Register Now
-            </Button>
           </div>
         </div>
       </section>
@@ -90,10 +82,24 @@ const LandingPage = () => {
           </p>
           <Button
             size="lg"
-            onClick={() => navigate("/register")}
+            onClick={() => navigate("/login")}
             className="text-lg px-8"
           >
             Get Started Today
+          </Button>
+        </div>
+      </section>
+
+      {/* Super Admin Registration Link */}
+      <section className="py-8 bg-white border-t">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-gray-600 mb-2">Are you a Society Administrator?</p>
+          <Button
+            variant="link"
+            onClick={() => navigate("/super-admin-register")}
+            className="text-primary"
+          >
+            Register as Super Admin
           </Button>
         </div>
       </section>

@@ -152,14 +152,14 @@ const Login = () => {
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex flex-col items-center">
+          <CardFooter className="flex flex-col items-center gap-2">
             <Button
               variant="link"
               onClick={() => navigate("/register")}
               className="text-gray-500 flex items-center gap-1"
             >
               <UserPlus className="h-4 w-4" />
-              <span>New resident? Register here</span>
+              <span>New User? Register</span>
             </Button>
           </CardFooter>
         </Card>
