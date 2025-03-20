@@ -50,6 +50,7 @@ const formSchema = z.object({
 const SuperAdminRegister = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { registerAdmin } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -67,16 +68,32 @@ const SuperAdminRegister = () => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
-    // In a real application, this would connect to an API to register the super admin
-    setTimeout(() => {
-      toast({
-        title: "Registration Request Submitted",
-        description: "Your super admin registration request has been submitted for verification.",
+    try {
+      // Auto-approve the super admin registration
+      const superAdmin = registerAdmin({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        phone: values.phone,
+        apartment: `${values.societyName} - ${values.position}`, // Store society and position in apartment field
+        role: "admin",
       });
       
-      navigate("/");
+      toast({
+        title: "Super Admin Registration Successful",
+        description: "Your account has been created successfully. You can now log in to access the super admin dashboard.",
+      });
+      
+      navigate("/admin-login");
+    } catch (error) {
+      toast({
+        title: "Registration Error",
+        description: "There was an error processing your registration.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -92,7 +109,7 @@ const SuperAdminRegister = () => {
           <CardHeader>
             <CardTitle>Super Admin Registration</CardTitle>
             <CardDescription>
-              Please fill out the form below to register as a Super Admin. Your application will be reviewed.
+              Please fill out the form below to register as a Super Admin.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -198,7 +215,7 @@ const SuperAdminRegister = () => {
                   className="w-full"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Submitting..." : "Register as Super Admin"}
+                  {isSubmitting ? "Registering..." : "Register as Super Admin"}
                 </Button>
               </form>
             </Form>
