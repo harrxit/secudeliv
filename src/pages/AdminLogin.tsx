@@ -24,7 +24,7 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Shield } from "lucide-react";
+import { Shield, LockKeyhole, User } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -56,10 +56,14 @@ const AdminLogin = () => {
       
       if (user) {
         if (user.role === "admin") {
+          // Check if super admin or regular admin
+          const isSuperAdmin = user.id === "super-admin";
+          
           toast({
-            title: "Admin Login Successful",
-            description: "Welcome to Secudeliv Security Panel!",
+            title: `${isSuperAdmin ? "Super Admin" : "Admin"} Login Successful`,
+            description: `Welcome to the ${isSuperAdmin ? "Super Admin" : "Security"} Panel!`,
           });
+          
           navigate("/admin-dashboard");
         } else {
           toast({
@@ -87,37 +91,43 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center animate-fadeIn">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center animate-fadeIn bg-gradient-to-b from-blue-50 to-white">
       <div className="max-w-md w-full px-4">
-        <div className="text-center mb-6">
-          <Shield className="h-12 w-12 text-primary mx-auto mb-2" />
-          <h1 className="text-2xl font-bold">Security Admin Login</h1>
-          <p className="text-gray-600">Access the security management panel</p>
+        <div className="text-center mb-8">
+          <div className="bg-primary/10 p-4 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+            <Shield className="h-12 w-12 text-primary mx-auto" />
+          </div>
+          <h1 className="text-3xl font-bold text-primary">Administration Portal</h1>
+          <p className="text-gray-600 mt-2">Access the management dashboard</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Admin Login</CardTitle>
+        <Card className="border-none shadow-lg">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-2xl">Admin Login</CardTitle>
             <CardDescription>
-              Please enter your security credentials to login.
+              Please enter your credentials to access the admin area.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
+                className="space-y-5"
               >
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Email Address
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="email"
                           placeholder="admin@example.com"
+                          className="bg-gray-50 border-gray-200"
                           {...field}
                         />
                       </FormControl>
@@ -131,11 +141,15 @@ const AdminLogin = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <LockKeyhole className="h-4 w-4" />
+                        Password
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="********"
+                          placeholder="Enter your password"
+                          className="bg-gray-50 border-gray-200"
                           {...field}
                         />
                       </FormControl>
@@ -146,14 +160,17 @@ const AdminLogin = () => {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full py-6 text-base font-medium"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Logging in..." : "Login as Admin"}
+                  {isSubmitting ? "Authenticating..." : "Sign In to Dashboard"}
                 </Button>
               </form>
             </Form>
           </CardContent>
+          <CardFooter className="flex justify-center pt-2 pb-6 text-sm text-gray-500">
+            Secure login portal for administration access
+          </CardFooter>
         </Card>
       </div>
     </div>

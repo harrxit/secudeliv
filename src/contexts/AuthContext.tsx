@@ -7,6 +7,7 @@ interface AuthContextType {
   login: (email: string, password: string) => User | null;
   logout: () => void;
   registerUser: (userData: Omit<User, "id" | "role" | "status" | "registeredAt">) => User;
+  registerAdmin: (userData: Omit<User, "id" | "status" | "registeredAt">) => User;
   updateUserStatus: (userId: string, status: UserStatus) => void;
   pendingUsers: User[];
   allUsers: User[];
@@ -17,6 +18,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([
+    {
+      id: "super-admin",
+      name: "Super Administrator",
+      apartment: "Management Office",
+      role: "admin",
+      status: "approved",
+      email: "superadmin@example.com",
+      password: "superadmin123",
+      phone: "123-456-7890",
+      registeredAt: new Date().toISOString(),
+    },
     {
       id: "admin-1",
       name: "Security Head",
@@ -91,6 +103,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return newUser;
   };
 
+  const registerAdmin = (userData: Omit<User, "id" | "status" | "registeredAt">) => {
+    const newAdmin: User = {
+      id: `admin-${Date.now()}`,
+      status: "approved",
+      registeredAt: new Date().toISOString(),
+      ...userData,
+    };
+
+    setAllUsers((prev) => [...prev, newAdmin]);
+    return newAdmin;
+  };
+
   const updateUserStatus = (userId: string, status: UserStatus) => {
     setAllUsers((prev) =>
       prev.map((u) => (u.id === userId ? { ...u, status } : u))
@@ -109,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         registerUser,
+        registerAdmin,
         updateUserStatus,
         pendingUsers,
         allUsers,
